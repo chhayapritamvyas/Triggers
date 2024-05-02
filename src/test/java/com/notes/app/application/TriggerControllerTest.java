@@ -1,27 +1,24 @@
 package com.notes.app.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notes.app.domain.Trigger;
-import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,13 +26,6 @@ class TriggerControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-//    @Autowired
-//    private WebApplicationContext webApplicationContext;
-//
-//    @Before
-//    public void setup(){
-//        DefaultMockMvcBuilder mockMvcBuilder = MockMvcBuilders.webAppContextSetup(webApplicationContext);
-//    }
 
     private String mapToJson(Object obj) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -49,7 +39,7 @@ class TriggerControllerTest {
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(uri).contentType(MediaType.APPLICATION_JSON).content(input)).andReturn();
 
-        assertEquals(201,mvcResult.getResponse().getStatus());
+        assertEquals(201, mvcResult.getResponse().getStatus());
         assertTrue(mvcResult.getResponse().getContentAsString().contains("Added trigger points successfully"));
 
     }
@@ -61,24 +51,56 @@ class TriggerControllerTest {
 
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(uri).contentType(MediaType.APPLICATION_JSON).content(input)).andReturn();
 
-        assertEquals(200,mvcResult.getResponse().getStatus());
+        assertEquals(200, mvcResult.getResponse().getStatus());
         assertTrue(mvcResult.getResponse().getContentAsString().contains("Saved Triggers"));
 
     }
 
     @Test
-    void getTriggerPoints() {
+    void getTriggerPoints() throws Exception {
+        String uri = "";
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get(uri).contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MockHttpServletResponse response = mvcResult.getResponse();
+        String responseStr = mvcResult.getResponse().getContentAsString();
+        assertEquals(200, response.getStatus());
+        List<Trigger> triggerList = new ObjectMapper().readValue(responseStr, new TypeReference<>() {
+        });
+        assertFalse(triggerList.isEmpty());
+        assertTrue(response.getContentAsString().contains("notes are useful parts"));
+
     }
 
     @Test
-    void getTriggersById() {
+    void getTriggersById() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/triggers/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print());
     }
 
     @Test
-    void updateTriggers() {
+    void updateTriggers() throws Exception {
+        String uri = "/triggers/update";
+        String input = mapToJson(new Trigger(1L, "notes are useful", "new"));
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.put(uri).contentType(MediaType.APPLICATION_JSON).content(input)).andReturn();
+
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        assertTrue(mvcResult.getResponse().getContentAsString().contains("Updated Triggers successfully"));
+
     }
 
     @Test
-    void deleteTriggers() {
+    void deleteTriggers() throws Exception {
+        String uri = "/triggers/delete";
+        String input = mapToJson(new Trigger(1L, "notes are useful", "new"));
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.delete(uri).contentType(MediaType.APPLICATION_JSON).content(input)).andReturn();
+
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        assertTrue(mvcResult.getResponse().getContentAsString().contains("Deleted Triggers successfully"));
     }
 }
