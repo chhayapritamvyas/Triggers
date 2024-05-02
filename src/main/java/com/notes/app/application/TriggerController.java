@@ -3,6 +3,7 @@ package com.notes.app.application;
 import com.notes.app.domain.Trigger;
 import com.notes.app.interfaces.TriggerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,9 +22,9 @@ public class TriggerController {
     private TriggerService triggerService;
 
     @PostMapping
-    public String addTriggerPoints(@RequestBody Trigger trigger) {
+    public ResponseEntity<String> addTriggerPoints(@RequestBody Trigger trigger) {
         Trigger triggerPoints = triggerService.addTriggerPoints(trigger);
-        return "Added trigger points successfully" + triggerPoints ;
+        return ResponseEntity.status(HttpStatus.CREATED).body("Added trigger points successfully" + triggerPoints);
     }
 
     @PostMapping("/triggers")
