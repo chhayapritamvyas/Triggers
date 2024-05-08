@@ -44,6 +44,7 @@ public class TriggerServiceImpl implements TriggerService {
 
     @Override
     public Trigger getTriggersById(String triggerId) {
+        log.info("Trigger id received :{}", triggerId);
         Optional<Trigger> optionalTrigger = triggerRepository.findById(Long.valueOf(triggerId));
         return optionalTrigger.orElseGet(Trigger::new);
     }
