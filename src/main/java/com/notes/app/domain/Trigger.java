@@ -28,4 +28,9 @@ public class Trigger {
 
     @Column(name = "point_status")
     private String pointStatus;
+
+    @Override
+    public String toString(){
+        return " Trigger + id " + id + " Notes : " + notes + " Point Status " + pointStatus;
+    }
 }
